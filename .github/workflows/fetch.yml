@@ -1,0 +1,40 @@
+name: 服务器端下载
+# 让 GitHub 的服务器替你把文件下好并放进仓库，手机不花流量
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: '要下载的网址（直链）'
+        required: true
+      dest:
+        description: '保存路径（含文件名，如 img/s/0198.jpg）'
+        required: true
+      ua:
+        description: 'User-Agent'
+        required: false
+        default: 'Mozilla/5.0'
+      repo:
+        description: '只用于日志说明，下载始终进本仓库'
+        required: false
+        default: ''
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: 下载
+        run: |
+          mkdir -p "$(dirname "${{ inputs.dest }}")"
+          curl -L --fail --retry 3 -A "${{ inputs.ua }}" \
+               -o "${{ inputs.dest }}" "${{ inputs.url }}"
+          ls -lh "${{ inputs.dest }}"
+      - name: 提交
+        run: |
+          git config user.name github-actions
+          git config user.email actions@github.com
+          git add -A
+          git commit -m "fetch: ${{ inputs.dest }}" || echo "无变化"
+          git push
