@@ -1,4 +1,0 @@
-/data/*.json
-  Cache-Control: public, max-age=300
-/img/*
-  Cache-Control: public, max-age=604800
